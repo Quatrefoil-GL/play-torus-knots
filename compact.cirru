@@ -7,8 +7,10 @@
     |app.comp.container $ {}
       :ns $ quote
         ns app.comp.container $ :require
-          quatrefoil.alias :refer $ group box sphere point-light ambient-light perspective-camera scene text
+          quatrefoil.alias :refer $ group box sphere point-light ambient-light perspective-camera scene text tube
           quatrefoil.core :refer $ defcomp >>
+          quatrefoil.comp.control :refer $ comp-value
+          quatrefoil.math :refer $ &v+ &q*
       :defs $ {}
         |comp-container $ quote
           defcomp comp-container (store)
@@ -24,35 +26,69 @@
                   :near 0.1
                   :far 1000
                   :position $ [] 0 0 100
-                comp-demo
-                ambient-light $ {} (:color 0x666666)
-                ; point-light $ {} (:color 0xffffff) (:intensity 1.4) (:distance 200)
-                  :position $ [] 20 40 50
+                comp-knots $ >> states :knots
                 ; point-light $ {} (:color 0xffffff) (:intensity 2) (:distance 200)
                   :position $ [] 0 60 0
-        |comp-demo $ quote
-          defcomp comp-demo () $ group ({})
-            box $ {} (:width 16) (:height 4) (:depth 6)
-              :position $ [] -40 0 0
-              :material $ {} (:kind :mesh-lambert) (:color 0x808080) (:opacity 0.6)
-              :event $ {}
-                :click $ fn (e d!) (d! :demo nil)
-            sphere $ {} (:radius 8)
-              :position $ [] 10 0 0
-              :material $ {} (:kind :mesh-lambert) (:opacity 0.6) (:color 0x9050c0)
-              :event $ {}
-                :click $ fn (e d!) (d! :canvas nil)
-            group ({})
-              text $ {} (:text |Quatrefoil) (:size 4) (:height 2)
-                :position $ [] -30 0 20
-                :material $ {} (:kind :mesh-lambert) (:color 0xffcccc)
-            sphere $ {} (:radius 4) (:emissive 0xffffff) (:metalness 0.8) (:color 0x00ff00) (:emissiveIntensity 1) (:roughness 0)
-              :position $ [] -10 20 0
-              :material $ {} (:kind :mesh-basic) (:color 0xffff55) (:opacity 0.8) (:transparent true)
-              :event $ {}
-                :click $ fn (e d!) (d! :canvas nil)
-            point-light $ {} (:color 0xffff55) (:intensity 2) (:distance 200)
-              :position $ [] -10 20 0
+        |knots-fn $ quote
+          defn knots-fn (ratio factor)
+            let
+                a $ :a factor
+                b $ :b factor
+                speed $ :speed factor
+                r-speed $ :r-speed factor
+                r $ * 0.5 (- b a)
+                center $ + a r
+                t1 $ * ratio speed js/Math.PI
+                point $ []
+                  + center $ * r (js/Math.cos t1)
+                  , 0
+                    * r $ js/Math.sin t1
+                t2 $ * r-speed ratio js/Math.PI
+              &q*
+                &q*
+                  [] 0 0 (js/Math.cos t2) (js/Math.sin t2)
+                  , point
+                [] 0 0
+                  negate $ js/Math.cos t2
+                  js/Math.sin t2
+        |comp-knots $ quote
+          defcomp comp-knots (states)
+            let
+                cursor $ :cursor states
+                state $ or (:data states)
+                  {} (:a 2) (:b 20) (:speed 10) (:r-speed 4)
+              group ({})
+                tube $ {} (:points-fn knots-fn) (:factor state) (:radius 0.4) (:tubular-segments 2000) (:radial-segments 8)
+                  :position $ [] 0 0 0
+                  :rotation $ [] 0 0 0
+                  :scale $ [] 1 1 1
+                  :material $ {} (:kind :mesh-standard) (:opacity 0.9) (:transparent false) (:roughness 0.7) (:metalness 0.5) (:color 0xf090c0)
+                comp-value (:a state) ([] 10 20 5) 0.2 ([] -40 40) 0xccaaff $ fn (v1 d!)
+                  d! cursor $ assoc state :a v1
+                comp-value (:b state) ([] 14 20 5) 0.2 ([] 0 80) 0xffaa99 $ fn (v1 d!)
+                  d! cursor $ assoc state :b v1
+                comp-value (:speed state) ([] 22 20 4) 0.1 ([] 0.1 60) 0x55ffaa $ fn (v1 d!)
+                  d! cursor $ assoc state :speed v1
+                comp-value (:r-speed state) ([] 26 20 4) 0.1 ([] 0.1 400) 0xffffaa $ fn (v1 d!)
+                  d! cursor $ assoc state :r-speed v1
+                text $ {}
+                  :text $ str
+                    .!toFixed (:a state) 3
+                    , "\" "
+                      .!toFixed (:b state) 3
+                      , "\", "
+                        .!toFixed (:speed state) 3
+                        , "\" "
+                          .!toFixed (:r-speed state) 3
+                  :position $ [] 0 30 0
+                  :size 2
+                  :height 0.2
+                  :rotation $ [] 0 0 0
+                  :scale $ [] 1 1 1
+                  :material $ {} (:kind :mesh-standard) (:opacity 0.9) (:transparent false) (:roughness 0.7) (:metalness 0.5) (:color 0xf090c0)
+                point-light $ {} (:color 0xffffff) (:intensity 1) (:distance 200)
+                  :position $ [] 20 40 10
+                ambient-light $ {} (:color 0xdddddd)
     |app.updater $ {}
       :ns $ quote
         ns app.updater $ :require

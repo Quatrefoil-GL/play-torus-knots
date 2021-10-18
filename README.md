@@ -1,23 +1,10 @@
 
-Quatrefoil Workflow
+Play Torus Knots
 ----
 
 > Based on [Quatrefoil](https://github.com/Quatrefoil-GL/quatrefoil).
 
-Demo http://r.tiye.me/Quatrefoil-GL/quatrefoil-workflow/
-
-### Develop
-
-Relies on https://github.com/calcit-lang/calcit_runner.rs .
-
-```bash
-yarn
-
-# also get calcit deps into `~/.config/calcit/modules/`
-
-cr --emit-js -1
-yarn vite
-```
+Demo http://r.tiye.me/Quatrefoil-GL/play-torus-knots/
 
 ### Workflow
 
