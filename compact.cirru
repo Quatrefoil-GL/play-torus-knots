@@ -27,6 +27,13 @@
                   :far 1000
                   :position $ [] 0 0 100
                 comp-knots $ >> states :knots
+                sphere $ {} (:radius 2) (:width-segments 10) (:height-segments 8)
+                  :position $ [] -20 -30 0
+                  :rotation $ [] 0 0 0
+                  :scale $ [] 1 1 1
+                  :material $ {} (:kind :mesh-standard) (:opacity 0.9) (:transparent false) (:roughness 0.7) (:metalness 0.5) (:color 0x8f40dd)
+                  :event $ {}
+                    :click $ fn (e d!) (js/document.body.requestFullscreen)
                 ; point-light $ {} (:color 0xffffff) (:intensity 2) (:distance 200)
                   :position $ [] 0 60 0
         |knots-fn $ quote
