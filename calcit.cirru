@@ -3,14 +3,23 @@
   :about "|Machine-generated snapshot. Do not edit directly — changes will be overwritten. Use `calcit query` to inspect and `calcit edit`/`calcit tree` to modify. Run `calcit docs agents --contract` before mutations; use `--full` for first orientation or changed contract digest. Manual edits must follow format and schema conventions, then run `calcit edit format`."
   :package |app
   :entries $ {} $ :default
-    {} (:description |) (:init-fn 'app.main/main!) (:mode :native)
-      :reload-fn 'app.main/reload!
+    {} (:description |) (:init-fn 'app.main/main!) (:mode :native) (:reload-fn 'app.main/reload!)
       :feature-policy $ {}
-      :modules $ [] |touch-control/ |pointed-prompt/ |quatrefoil/ |quaternion/
+      :modules $ [] |touch-control/ |pointed-prompt/ |quatrefoil/ |quaternion/ |js-ffi/
       :type-slots $ {}
   :files $ {}
     'app.comp.container $ %{} 'FileEntry
       :defs $ {}
+        'FullscreenElementHost $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ deftrait FullscreenElementHost
+            .request-fullscreen! $ :: 'Fn $ {}
+              :args $ [] 'app.comp.container/FullscreenElementHost
+              :return 'Unit
+          :examples $ []
+          :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
+            :names $ {} $ :request-fullscreen! |requestFullscreen
+          :schema $ :: 'Trait
+          :tags $ #{} :ffi :js-host
         'comp-container $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (store)
             let
@@ -33,11 +42,15 @@
                     :material $ {} (:kind :mesh-standard) (:opacity 0.9) (:transparent false) (:roughness 0.7) (:metalness 0.5) (:color 0x8f40dd)
                     :event $ {} $ :click
                       fn (e d!)
-                        .!requestFullscreen $ ffi-object js/document.body
+                        &let
+                          body $ unsafe-coerce js/document.body app.comp.container/FullscreenElementHost
+                          body .request-fullscreen!
                   ; point-light $ {} (:color 0xffffff) (:intensity 2) (:distance 200)
                     :position $ [] 0 60 0
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Dynamic)
+            :args $ [] $ :: 'Map 'Tag 'Dynamic
+            :features $ #{} :js-ffi
         'comp-knots $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-knots (states)
             let
@@ -45,9 +58,7 @@
                 state $ or (field states :data)
                   {} (:a 2) (:b 20) (:speed 10) (:r-speed 4)
               group ({})
-                tube $ {} (:points-fn knots-fn) (:factor state) (:radius 0.4)
-                  :tubular-segments 2000
-                  :radial-segments 8
+                tube $ {} (:points-fn knots-fn) (:factor state) (:radius 0.4) (:tubular-segments 2000) (:radial-segments 8)
                   :position $ [] 0 0 0
                   :rotation $ [] 0 0 0
                   :scale $ [] 1 1 1
@@ -102,20 +113,15 @@
                   :position $ [] 20 40 10
                 ambient-light $ {} $ :color 0xdddddd
           :examples $ []
-          :schema $ :: 'Dynamic
-        'ffi-object $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn ffi-object (value) (unsafe-coerce value JsObject)
-          :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Dynamic)
+            :args $ [] $ :: 'Map 'Tag 'Dynamic
+            :features $ #{} :js-ffi
         'field $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn field (value key)
             option:unwrap-or (get value key) nil
           :examples $ []
-          :schema $ :: 'Dynamic
-        'js-number $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn js-number (value) (unsafe-coerce value Number)
-          :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Dynamic)
+            :args $ [] (:: 'Map 'Tag 'Dynamic) 'Tag
         'knots-fn $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn knots-fn (ratio factor)
             let
@@ -125,32 +131,29 @@
                 r-speed $ field factor :r-speed
                 r $ * 0.5 $ - b a
                 center $ + a r
-                t1 $ * ratio speed $ js-number
-                  .-PI $ ffi-object js/Math
-                point $ []
-                  + center $ * r $ js-number (js/Math.cos t1)
-                  , 0 $ * r
-                    js-number $ js/Math.sin t1
-                t2 $ * r-speed ratio $ js-number
-                  .-PI $ ffi-object js/Math
+                t1 $ * ratio speed 3.141592653589793
+                point $ quaternion 0
+                  + center $ * r $ cos t1
+                  , 0 $ * r (sin t1)
+                t2 $ * r-speed ratio 3.141592653589793
               &q*
                 &q*
-                  [] 0 0
-                    js-number $ js/Math.cos t2
-                    js-number $ js/Math.sin t2
+                  quaternion 0 0 (cos t2) (sin t2)
                   , point
-                [] 0 0
-                  negate $ js-number $ js/Math.cos t2
-                  js-number $ js/Math.sin t2
+                quaternion 0 0
+                  negate $ cos t2
+                  sin t2
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'quaternion.core/Quaternion)
+            :args $ [] 'Number $ :: 'Map 'Tag 'Dynamic
+            :features $ #{} :js-ffi
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require
             quatrefoil.alias :refer $ group box sphere point-light ambient-light perspective-camera scene text tube
             quatrefoil.core :refer $ defcomp >>
             quatrefoil.comp.control :refer $ comp-value
-            quaternion.core :refer $ &v+ &q*
+            quaternion.core :refer $ &v+ &q* quaternion
     'app.main $ %{} 'FileEntry
       :defs $ {}
         '*store $ %{} 'CodeEntry (:doc |)
@@ -158,7 +161,17 @@
             {} $ :states $ {}
               :cursor $ []
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Ref $ :: 'Map 'Tag 'Dynamic
+        'MobileDetectHost $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ deftrait MobileDetectHost
+            .mobile? $ :: 'Fn $ {}
+              :args $ [] 'app.main/MobileDetectHost
+              :return 'Bool
+          :examples $ []
+          :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
+            :names $ {} $ :mobile? |mobile
+          :schema $ :: 'Trait
+          :tags $ #{} :ffi :js-host
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op op-data)
             if (list? op)
@@ -168,26 +181,16 @@
                 ; js/console.log |Dispatch: op op-data store
                 reset! *store store
           :examples $ []
-          :schema $ :: 'Dynamic
-        'ffi-object $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn ffi-object (value) (unsafe-coerce value JsObject)
-          :examples $ []
-          :schema $ :: 'Dynamic
-        'js-number $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn js-number (value) (unsafe-coerce value Number)
-          :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Unit)
+            :args $ [] 'Dynamic 'Dynamic
+            :features $ #{} :js-ffi
         'main! $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn main! ()
-            load-console-formatter!
-            inject-tree-methods
+          :code $ quote $ defn main! () (load-console-formatter!) (inject-tree-methods)
             set-perspective-camera! $ {} (:fov 40) (:near 0.1) (:far 100)
               :position $ [] 0 0 8
-              :aspect $ /
-                js-number $ .-innerWidth $ ffi-object js/window
-                js-number $ .-innerHeight $ ffi-object js/window
+              :aspect $ / (viewport-width) (viewport-height)
             let
-                canvas-el $ js/document.querySelector |canvas
+                canvas-el $ option:unwrap $ query-selector |canvas
               init-renderer! canvas-el $ {} $ :background 0x110022
             render-app!
             add-watch *store :changes $ fn (store prev) (render-app!)
@@ -197,31 +200,38 @@
             init-controls!
             println "|App started!"
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Unit)
+            :args $ []
+            :features $ #{} :js-ffi
         'mobile? $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ def mobile?
-            .!mobile $ new mobile-detect js/window.navigator.userAgent
+          :code $ quote $ defn mobile? ()
+            let
+                detector $ unsafe-coerce (new mobile-detect js/window.navigator.userAgent) app.main/MobileDetectHost
+              detector .mobile?
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Bool)
+            :args $ []
+            :features $ #{} :js-ffi
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
             if (some? build-errors) (hud! |error build-errors)
               do (hud! |ok~ nil) (clear-cache!)
-                when mobile?
-                  clear-control-loop!
-                  handle-control-events
+                when (mobile?) (clear-control-loop!) (handle-control-events)
                 remove-watch *store :changes
                 add-watch *store :changes $ fn (store prev) (render-app!)
                 render-app!
                 set! js/window.onkeydown handle-key-event
                 println "|Code updated."
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Unit)
+            :args $ []
+            :features $ #{} :js-ffi
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! () (; println "|Render app:")
             render-canvas! (comp-container @*store) dispatch!
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Unit)
+            :args $ []
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
@@ -235,13 +245,16 @@
             |bottom-tip :default hud!
             |./calcit.build-errors :default build-errors
             quatrefoil.dsl.object3d-dom :refer $ set-perspective-camera!
+            js-ffi.browser :refer $ viewport-width viewport-height query-selector
     'app.updater $ %{} 'FileEntry
       :defs $ {} $ 'updater
         %{} 'CodeEntry (:doc |)
           :code $ quote $ defn updater (store op op-data)
             case-default op store $ :states $ update-states store op-data
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {}
+            :args $ [] (:: 'Map 'Tag 'Dynamic) 'Dynamic 'Dynamic
+            :return $ :: 'Map 'Tag 'Dynamic
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
           :require $ quatrefoil.cursor :refer $ update-states
