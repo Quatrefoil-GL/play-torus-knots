@@ -136,15 +136,13 @@
                   + center $ * r $ cos t1
                   , 0 $ * r (sin t1)
                 t2 $ * r-speed ratio 3.141592653589793
-              &q*
+              q-to-js $ &q*
                 &q*
-                  quaternion 0 0 (cos t2) (sin t2)
+                  quaternion (sin t2) 0 0 $ cos t2
                   , point
-                quaternion 0 0
-                  negate $ cos t2
-                  sin t2
+                quaternion (sin t2) 0 0 $ negate $ cos t2
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'quaternion.core/Quaternion)
+          :schema $ :: 'Fn $ {} (:return 'JsObject)
             :args $ [] 'Number $ :: 'Map 'Tag 'Dynamic
             :features $ #{} :js-ffi
       :ns $ %{} 'NsEntry (:doc |)
@@ -153,7 +151,7 @@
             quatrefoil.alias :refer $ group box sphere point-light ambient-light perspective-camera scene text tube
             quatrefoil.core :refer $ defcomp >>
             quatrefoil.comp.control :refer $ comp-value
-            quaternion.core :refer $ &v+ &q* quaternion
+            quaternion.core :refer $ &v+ &q* quaternion q-to-js
     'app.main $ %{} 'FileEntry
       :defs $ {}
         '*store $ %{} 'CodeEntry (:doc |)
