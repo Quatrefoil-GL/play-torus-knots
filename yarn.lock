@@ -60,15 +60,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@quamolit/quatrefoil-utils@npm:^0.0.2":
-  version: 0.0.2
-  resolution: "@quamolit/quatrefoil-utils@npm:0.0.2"
-  peerDependencies:
-    three: "*"
-  checksum: 10c0/0466a32b3da954bebfdf0a82d73039ae9b538d726c9817894a5e6cdd398dcfad63365ea1784a2c12ab6a18dc439ef7ae1a18a6b12e0efc9c303eeeaa6b557498
-  languageName: node
-  linkType: hard
-
 "@quamolit/touch-control@npm:^0.0.13":
   version: 0.0.13
   resolution: "@quamolit/touch-control@npm:0.0.13"
@@ -637,7 +628,6 @@ __metadata:
   dependencies:
     "@calcit/procs": "npm:0.27.0"
     "@calcit/std": "npm:^0.0.3"
-    "@quamolit/quatrefoil-utils": "npm:^0.0.2"
     "@quamolit/touch-control": "npm:^0.0.13"
     "@quatrefoil/utils": "npm:^0.0.3"
     bottom-tip: "npm:^0.1.5"
