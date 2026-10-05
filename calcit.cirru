@@ -233,7 +233,6 @@
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
-            |@quamolit/quatrefoil-utils :refer $ inject-tree-methods
             quatrefoil.core :refer $ render-canvas! init-controls! *global-tree clear-cache! init-renderer! handle-key-event handle-control-events
             app.comp.container :refer $ comp-container
             app.updater :refer $ [] updater
@@ -244,6 +243,7 @@
             |./calcit.build-errors :default build-errors
             quatrefoil.dsl.object3d-dom :refer $ set-perspective-camera!
             js-ffi.browser :refer $ viewport-width viewport-height query-selector
+            |@quatrefoil/utils :refer $ inject-tree-methods
     'app.updater $ %{} 'FileEntry
       :defs $ {} $ 'updater
         %{} 'CodeEntry (:doc |)
