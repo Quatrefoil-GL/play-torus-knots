@@ -11,8 +11,10 @@ PR 的 COS prefix 和 Vite CDN base 按编号/run/attempt 隔离；生产前缀
 `Quatrefoil-GL/play-torus-knots/` 与原 web-assets rsync 路径保持不变。
 上传按事件/分支排队，job/上传分别限制为 15/10 分钟，现有类型门禁保留。
 本轮将 Calcit/procs 从 0.27.0 成对升级到正式 0.30.1；依赖固定已发布的
-Quatrefoil 0.1.8、Quaternion 0.2.14、Pointed Prompt 0.0.19 和 JS-FFI 0.2.3，
+Quatrefoil 0.1.8、Quaternion 0.2.16、Pointed Prompt 0.0.19 和 JS-FFI 0.2.3，
 移除旧 JS-FFI alpha tag，CI 使用 strict 模块解析，不改原前端部署目标。
+Quaternion 0.2.16 是正式 0.30.1 配对模块，与原 0.2.14 的源码 Snapshot 完全相同，
+不改变数值算法或 q-to-js 的 JS Array 表示；本项目仍按上述 List 回调合同适配。
 应用的 `inject-tree-methods` 引用迁到已使用的正式 `@quatrefoil/utils`，删除旧包
 `@quamolit/quatrefoil-utils`；两包该初始化实现相同，避免重复依赖与原型初始化。
 
