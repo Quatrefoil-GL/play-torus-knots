@@ -10,31 +10,17 @@
   :files $ {}
     'app.comp.container $ %{} 'FileEntry
       :defs $ {}
-        'FullscreenElementHost $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ deftrait FullscreenElementHost
-            .request-fullscreen! $ :: 'Fn $ {}
-              :args $ [] 'app.comp.container/FullscreenElementHost
-              :return 'Unit
-          :examples $ []
-          :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-            :names $ {} $ :request-fullscreen! |requestFullscreen
-          :schema $ :: 'Trait
-          :tags $ #{} :ffi :js-host
         'comp-container $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (store)
             let
-                states $ field store :states
-                cursor $ field states :cursor
-                state $ either (field states :data)
-                  {} $ :tab :portal
-                tab $ field state :tab
+                states $ decode-map-as (field store :states) (:: 'Map 'Tag 'Dynamic)
                 scaled 0.02
               scene ({})
                 group
                   {}
                     :scale $ [] scaled scaled scaled
                     :position $ [] -0.1 1 -0.1
-                  comp-knots $ >> states :knots
+                  comp-knots $ decode-map-as (>> states :knots) (:: 'Map 'Tag 'Dynamic)
                   sphere $ {} (:radius 2) (:width-segments 10) (:height-segments 8)
                     :position $ [] -20 -30 0
                     :rotation $ [] 0 0 0
@@ -42,21 +28,21 @@
                     :material $ {} (:kind :mesh-standard) (:opacity 0.9) (:transparent false) (:roughness 0.7) (:metalness 0.5) (:color 0x8f40dd)
                     :event $ {} $ :click
                       fn (e d!)
-                        &let
-                          body $ unsafe-coerce js/document.body app.comp.container/FullscreenElementHost
-                          body .request-fullscreen!
+                        element-request-fullscreen! $ .unwrap $ document-body
                   ; point-light $ {} (:color 0xffffff) (:intensity 2) (:distance 200)
                     :position $ [] 0 60 0
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Dynamic)
+          :schema $ :: 'Fn $ {} (:return 'quatrefoil.schema/Component)
             :args $ [] $ :: 'Map 'Tag 'Dynamic
             :features $ #{} :js-ffi
         'comp-knots $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-knots (states)
             let
                 cursor $ field states :cursor
-                state $ or (field states :data)
-                  {} (:a 2) (:b 20) (:speed 10) (:r-speed 4)
+                state $ decode-map-as
+                  or (field states :data)
+                    {} (:a 2) (:b 20) (:speed 10) (:r-speed 4)
+                  :: 'Map 'Tag 'Number
               group ({})
                 tube $ {} (:points-fn knots-fn) (:factor state) (:radius 0.4) (:tubular-segments 2000) (:radial-segments 8)
                   :position $ [] 0 0 0
@@ -65,44 +51,76 @@
                   :material $ {} (:kind :mesh-standard) (:opacity 0.9) (:transparent false) (:roughness 0.7) (:metalness 0.5) (:color 0xf090c0)
                 comp-value
                   {} (:speed 0.2) (:show-text? true) (:label |a)
-                    :value $ field state :a
+                    :value $ .unwrap $ get state :a
                     :position $ [] 10 20 5
                     :bound $ [] -40 40
                     :color 0xccaaff
                   fn (v1 d!)
-                    d! cursor $ assoc state :a v1
+                    hint-fn $ {}
+                      :args $ [] 'Dynamic $ :: 'Fn
+                        {}
+                          :args $ [] 'Dynamic 'Dynamic
+                          :return 'Unit
+                      :return 'Unit
+                    d! cursor $ assoc state :a $ decode-map-as v1 'Number
                 comp-value
                   {} (:speed 0.2) (:show-text? true) (:label |b)
-                    :value $ field state :b
+                    :value $ .unwrap $ get state :b
                     :position $ [] 14 20 5
                     :bound $ [] 0 80
                     :color 0xffaa99
                   fn (v1 d!)
-                    d! cursor $ assoc state :b v1
+                    hint-fn $ {}
+                      :args $ [] 'Dynamic $ :: 'Fn
+                        {}
+                          :args $ [] 'Dynamic 'Dynamic
+                          :return 'Unit
+                      :return 'Unit
+                    d! cursor $ assoc state :b $ decode-map-as v1 'Number
                 comp-value
                   {} (:speed 0.1) (:show-text? true) (:label |speed)
-                    :value $ field state :speed
+                    :value $ .unwrap $ get state :speed
                     :position $ [] 22 20 4
                     :bound $ [] 0.1 60
                     :color 0x55ffaa
                   fn (v1 d!)
-                    d! cursor $ assoc state :speed v1
+                    hint-fn $ {}
+                      :args $ [] 'Dynamic $ :: 'Fn
+                        {}
+                          :args $ [] 'Dynamic 'Dynamic
+                          :return 'Unit
+                      :return 'Unit
+                    d! cursor $ assoc state :speed $ decode-map-as v1 'Number
                 comp-value
                   {} (:speed 0.1) (:show-text? true) (:label |r-speed)
-                    :value $ field state :r-speed
+                    :value $ .unwrap $ get state :r-speed
                     :position $ [] 26 20 4
                     :bound $ [] 0.1 400
                     :color 0xffffaa
                   fn (v1 d!)
-                    d! cursor $ assoc state :r-speed v1
+                    hint-fn $ {}
+                      :args $ [] 'Dynamic $ :: 'Fn
+                        {}
+                          :args $ [] 'Dynamic 'Dynamic
+                          :return 'Unit
+                      :return 'Unit
+                    d! cursor $ assoc state :r-speed $ decode-map-as v1 'Number
                 text $ {}
                   :text $ str
-                    .!toFixed (field state :a) 3
+                    .!toFixed
+                      .unwrap $ get state :a
+                      , 3
                     , "| "
-                      .!toFixed (field state :b) 3
+                      .!toFixed
+                        .unwrap $ get state :b
+                        , 3
                       , "|, "
-                        .!toFixed (field state :speed) 3
-                        , "| " $ .!toFixed (field state :r-speed) 3
+                        .!toFixed
+                          .unwrap $ get state :speed
+                          , 3
+                        , "| " $ .!toFixed
+                          .unwrap $ get state :r-speed
+                          , 3
                   :position $ [] 0 30 0
                   :size 2
                   :depth 0.2
@@ -113,22 +131,22 @@
                   :position $ [] 20 40 10
                 ambient-light $ {} $ :color 0xdddddd
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Dynamic)
+          :schema $ :: 'Fn $ {} (:return 'quatrefoil.schema/Component)
             :args $ [] $ :: 'Map 'Tag 'Dynamic
             :features $ #{} :js-ffi
         'field $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn field (value key)
-            option:unwrap-or (get value key) nil
+            .unwrap-or (get value key) nil
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Dynamic)
             :args $ [] (:: 'Map 'Tag 'Dynamic) 'Tag
         'knots-fn $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn knots-fn (ratio factor)
             let
-                a $ field factor :a
-                b $ field factor :b
-                speed $ field factor :speed
-                r-speed $ field factor :r-speed
+                a $ .unwrap $ get factor :a
+                b $ .unwrap $ get factor :b
+                speed $ .unwrap $ get factor :speed
+                r-speed $ .unwrap $ get factor :r-speed
                 r $ * 0.5 $ - b a
                 center $ + a r
                 t1 $ * ratio speed 3.141592653589793
@@ -136,22 +154,32 @@
                   + center $ * r $ cos t1
                   , 0 $ * r (sin t1)
                 t2 $ * r-speed ratio 3.141592653589793
-              q-to-js $ &q*
+              match
                 &q*
-                  quaternion (sin t2) 0 0 $ cos t2
-                  , point
-                quaternion (sin t2) 0 0 $ negate $ cos t2
+                  &q*
+                    quaternion (sin t2) 0 0 $ cos t2
+                    , point
+                  quaternion (sin t2) 0 0 $ negate $ cos t2
+                (:quaternion s x y z) ([] x y z s)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] 'Number $ :: 'Map 'Tag 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ :: 'Fn $ {}
+            :args $ [] 'Number $ :: 'Map 'Tag 'Number
+            :return $ :: 'List 'Number
+          :tests $ [] $ %{} 'TestEntry (:name |curve-list-contract)
+            :code $ quote $ do
+              assert= ([] -20 0 0 0)
+                knots-fn 0 $ {} (:a 2) (:b 20) (:speed 10) (:r-speed 4)
+              assert= ([] -20 0 0 0)
+                knots-fn 0.37 $ {} (:a 2) (:b 20) (:speed 0) (:r-speed 0)
+            :tags $ #{} :geometry
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require
             quatrefoil.alias :refer $ group box sphere point-light ambient-light perspective-camera scene text tube
             quatrefoil.core :refer $ defcomp >>
             quatrefoil.comp.control :refer $ comp-value
-            quaternion.core :refer $ &v+ &q* quaternion q-to-js
+            quaternion.core :refer $ &v+ &q* quaternion
+            js-ffi.browser :refer $ document-body element-request-fullscreen!
     'app.main $ %{} 'FileEntry
       :defs $ {}
         '*store $ %{} 'CodeEntry (:doc |)
@@ -164,7 +192,7 @@
           :code $ quote $ deftrait MobileDetectHost
             .mobile? $ :: 'Fn $ {}
               :args $ [] 'app.main/MobileDetectHost
-              :return 'Bool
+              :return $ :: 'JsNullish 'String
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
             :names $ {} $ :mobile? |mobile
@@ -178,6 +206,7 @@
                   store $ updater @*store op op-data
                 ; js/console.log |Dispatch: op op-data store
                 reset! *store store
+                , &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ [] 'Dynamic 'Dynamic
@@ -188,10 +217,10 @@
               :position $ [] 0 0 8
               :aspect $ / (viewport-width) (viewport-height)
             let
-                canvas-el $ option:unwrap $ query-selector |canvas
+                canvas-el $ .unwrap $ query-selector |canvas
               init-renderer! canvas-el $ {} $ :background 0x110022
             render-app!
-            add-watch *store :changes $ fn (store prev) (render-app!)
+            add-watch! *store :changes $ fn (store prev) (render-app!)
             set! js/window.onkeydown handle-key-event
             render-control!
             handle-control-events
@@ -204,22 +233,23 @@
         'mobile? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn mobile? ()
             let
-                detector $ unsafe-coerce (new mobile-detect js/window.navigator.userAgent) app.main/MobileDetectHost
-              detector .mobile?
+                detector $ js-cast (new mobile-detect js/window.navigator.userAgent) 'app.main/MobileDetectHost
+              js-present? $ detector .mobile?
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Bool)
             :args $ []
             :features $ #{} :js-ffi
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
-            if (some? build-errors) (hud! |error build-errors)
+            if (non-nil? build-errors) (hud! |error build-errors)
               do (hud! |ok~ nil) (clear-cache!)
                 when (mobile?) (clear-control-loop!) (handle-control-events)
-                remove-watch *store :changes
-                add-watch *store :changes $ fn (store prev) (render-app!)
+                remove-watch! *store :changes
+                add-watch! *store :changes $ fn (store prev) (render-app!)
                 render-app!
                 set! js/window.onkeydown handle-key-event
                 println "|Code updated."
+            , &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
@@ -235,7 +265,7 @@
           :require
             quatrefoil.core :refer $ render-canvas! init-controls! *global-tree clear-cache! init-renderer! handle-key-event handle-control-events
             app.comp.container :refer $ comp-container
-            app.updater :refer $ [] updater
+            app.updater :refer $ updater
             |three :as THREE
             touch-control.core :refer $ render-control! control-states start-control-loop! clear-control-loop!
             |mobile-detect :default mobile-detect
