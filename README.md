@@ -6,6 +6,29 @@ Play Torus Knots
 
 Demo http://r.tiye.me/Quatrefoil-GL/play-torus-knots/
 
+### 本轮升级：Calcit 0.32.1
+
+请配对安装正式 CLI / `@calcit/procs` 0.32.1、重装模块并刷新页面。
+依赖使用已发布 Quatrefoil 0.2.0、Quaternion 0.2.19、Pointed Prompt 0.0.24、JS-FFI 0.2.9，
+Touch Control 0.0.35 为传递依赖，不再引用本地候选或旧 alpha 模块。
+Quatrefoil 0.2.0 的源码树与其已合并、完整 CI 通过的候选一致；本次应用源码仅经官方事务
+迁移旧类型标注，结形公式、2000 段采样、材质、List 坐标、原几何断言和 HUD 不变。
+
+遵守不运行本地 Caps 的要求：本地使用已核对的精确已发布源码，不将这些链接称为 Caps
+安装或工具链验收；干净严格安装及 `caps verify --toolchain` 由原 Linux CI 独立执行。
+本地 218 个定义、12 个公开定义、完整 strict、原一项几何测试（两条断言）、不可变 npm
+安装和原资源复制/构建通过，deprecated call / dynamic method 均为 0。
+真实页面可见默认结形、数值标签和控制点；原 a 键相机旋转与刷新恢复通过，无警告或错误。
+没有验证完整参数控制、多指触控、VR/gamepad、全屏或全部几何组合。一次普通鼠标拖动未改变
+参数，不能写成控件验收通过；原控件另需组合输入，其公开数值 callback 合同仍见
+[Quatrefoil #67](https://github.com/Quatrefoil-GL/quatrefoil/issues/67)，本轮不伪造封闭类型。
+
+npm 等待期为维护者授权的一小时，移除旧 procs 0.27.0 豁免。四个 Action 引用使用经核对
+对应原 commit 的精确正式 tag，接受维护者已确认的可移动 tag 风险；原权限、类型门禁、
+COS 内置 verify、PR 隔离前缀与生产路径不变。本次不合并、生产部署或发版应用。
+
+### 此前 0.30.1 迁移记录
+
 前端使用 COS Action 正式 v1.2.0 的 `public-base-url` 内置 verify，不增加重复校验脚本。
 PR 的 COS prefix 和 Vite CDN base 按编号/run/attempt 隔离；生产前缀
 `Quatrefoil-GL/play-torus-knots/` 与原 web-assets rsync 路径保持不变。
@@ -42,7 +65,7 @@ VR/gamepad/全屏权限和所有移动设备未全部验收。不提交 js-out �
 
 ### Workflow
 
-https://github.com/Quamolit/quatrefoil-workflow
+https://github.com/Quatrefoil-GL/quatrefoil-workflow
 
 后续源码清理仅将命名 store 的 `defatom` 改为 `defref`，并把 updater 的单一 Tag 分支从 `case-default` 改为字面量 `match`。原开放输入合同保留：`:states` 委托同一 `update-states`，其他输入返回原 store，不改几何公式、参数、回调或 HUD。官方 Linux 0.30.1 中，改写前后分别通过原生/JS 的9项输入回放，原几何测试、完整 strict、原公开定义/质量门禁和构建通过；62个生成 JS 文件的哈希全部一致。回放用例经官方入口临时附加再移除，并核对源码 blob 恢复，不进入最终 PR；未新增永久测试或脚本，也不以此代替 WebGL、VR、触控或 HMR 验收。
 
