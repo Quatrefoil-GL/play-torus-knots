@@ -32,9 +32,7 @@
                   ; point-light $ {} (:color 0xffffff) (:intensity 2) (:distance 200)
                     :position $ [] 0 60 0
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'quatrefoil.schema/Component)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> quatrefoil.schema/Component) (:features :js-ffi)
         'comp-knots $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-knots (states)
             let
@@ -56,12 +54,9 @@
                     :bound $ [] -40 40
                     :color 0xccaaff
                   fn (v1 d!)
-                    hint-fn $ {}
-                      :args $ [] 'Dynamic $ :: 'Fn
-                        {}
-                          :args $ [] 'Dynamic 'Dynamic
-                          :return 'Unit
-                      :return 'Unit
+                    hint-fn $ Fn Dynamic
+                      Fn Dynamic Dynamic $ -> Unit
+                      -> Unit
                     d! cursor $ assoc state :a $ decode-map-as v1 'Number
                 comp-value
                   {} (:speed 0.2) (:show-text? true) (:label |b)
@@ -70,12 +65,9 @@
                     :bound $ [] 0 80
                     :color 0xffaa99
                   fn (v1 d!)
-                    hint-fn $ {}
-                      :args $ [] 'Dynamic $ :: 'Fn
-                        {}
-                          :args $ [] 'Dynamic 'Dynamic
-                          :return 'Unit
-                      :return 'Unit
+                    hint-fn $ Fn Dynamic
+                      Fn Dynamic Dynamic $ -> Unit
+                      -> Unit
                     d! cursor $ assoc state :b $ decode-map-as v1 'Number
                 comp-value
                   {} (:speed 0.1) (:show-text? true) (:label |speed)
@@ -84,12 +76,9 @@
                     :bound $ [] 0.1 60
                     :color 0x55ffaa
                   fn (v1 d!)
-                    hint-fn $ {}
-                      :args $ [] 'Dynamic $ :: 'Fn
-                        {}
-                          :args $ [] 'Dynamic 'Dynamic
-                          :return 'Unit
-                      :return 'Unit
+                    hint-fn $ Fn Dynamic
+                      Fn Dynamic Dynamic $ -> Unit
+                      -> Unit
                     d! cursor $ assoc state :speed $ decode-map-as v1 'Number
                 comp-value
                   {} (:speed 0.1) (:show-text? true) (:label |r-speed)
@@ -98,12 +87,9 @@
                     :bound $ [] 0.1 400
                     :color 0xffffaa
                   fn (v1 d!)
-                    hint-fn $ {}
-                      :args $ [] 'Dynamic $ :: 'Fn
-                        {}
-                          :args $ [] 'Dynamic 'Dynamic
-                          :return 'Unit
-                      :return 'Unit
+                    hint-fn $ Fn Dynamic
+                      Fn Dynamic Dynamic $ -> Unit
+                      -> Unit
                     d! cursor $ assoc state :r-speed $ decode-map-as v1 'Number
                 text $ {}
                   :text $ str
@@ -131,15 +117,12 @@
                   :position $ [] 20 40 10
                 ambient-light $ {} $ :color 0xdddddd
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'quatrefoil.schema/Component)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> quatrefoil.schema/Component) (:features :js-ffi)
         'field $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn field (value key)
             .unwrap-or (get value key) nil
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Dynamic)
-            :args $ [] (:: 'Map 'Tag 'Dynamic) 'Tag
+          :schema $ quote $ Fn (Map Tag Dynamic) Tag (-> Dynamic)
         'knots-fn $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn knots-fn (ratio factor)
             let
@@ -162,9 +145,8 @@
                   quaternion (sin t2) 0 0 $ negate $ cos t2
                 (:quaternion s x y z) ([] x y z s)
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] 'Number $ :: 'Map 'Tag 'Number
-            :return $ :: 'List 'Number
+          :schema $ quote $ Fn Number (Map Tag Number)
+            -> $ List Number
           :tests $ [] $ %{} 'TestEntry (:name |curve-list-contract)
             :code $ quote $ do
               assert= ([] -20 0 0 0)
@@ -187,16 +169,15 @@
             {} $ :states $ {}
               :cursor $ []
           :examples $ []
-          :schema $ :: 'Ref $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Ref (Map Tag Dynamic)
         'MobileDetectHost $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait MobileDetectHost
-            .mobile? $ :: 'Fn $ {}
-              :args $ [] 'app.main/MobileDetectHost
-              :return $ :: 'JsNullish 'String
+            .mobile? $ quote $ Fn app.main/MobileDetectHost
+              -> $ JsNullish String
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
             :names $ {} $ :mobile? |mobile
-          :schema $ :: 'Trait
+          :schema $ quote Trait
           :tags $ #{} :ffi :js-host
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op op-data)
@@ -208,9 +189,7 @@
                 reset! *store store
                 , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Dynamic 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Dynamic Dynamic (-> Unit) (:features :js-ffi)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! () (load-console-formatter!) (inject-tree-methods)
             set-perspective-camera! $ {} (:fov 40) (:near 0.1) (:far 100)
@@ -227,18 +206,14 @@
             init-controls!
             println "|App started!"
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'mobile? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn mobile? ()
             let
                 detector $ js-cast (new mobile-detect js/window.navigator.userAgent) 'app.main/MobileDetectHost
               js-present? $ detector .mobile?
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Bool)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Bool) (:features :js-ffi)
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
             if (non-nil? build-errors) (hud! |error build-errors)
@@ -251,15 +226,12 @@
                 println "|Code updated."
             , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! () (; println "|Render app:")
             render-canvas! (comp-container @*store) dispatch!
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
+          :schema $ quote $ Fn (-> Unit)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
@@ -282,9 +254,8 @@
               :states $ update-states store op-data
               _ store
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] (:: 'Map 'Tag 'Dynamic) 'Dynamic 'Dynamic
-            :return $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Fn (Map Tag Dynamic) Dynamic Dynamic
+            -> $ Map Tag Dynamic
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
           :require $ quatrefoil.cursor :refer $ update-states
