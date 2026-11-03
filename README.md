@@ -6,7 +6,29 @@ Play Torus Knots
 
 Demo http://r.tiye.me/Quatrefoil-GL/play-torus-knots/
 
-### 本轮升级：Calcit 0.32.1
+### 本轮升级：Calcit 0.34.2
+
+请配对安装 CLI/procs 0.34.2 和正式 Quatrefoil 0.3.0，传递 Touch Control 0.0.36，
+其余正式模块版本保持。knots-fn 的结果现在明确为四项 [x y z s] Tuple，保留原 List
+运行表示、第四项标量和全部数值表达式。position/scale 继续是合法的三项列表。
+原 2000 段、材质、控制回调、HUD、应用版本、前端 CDN/rsync 路径不变。
+
+除官方格式化外，12 个原定义只有 knots-fn 的返回 schema 变化；原测试、算法和 FFI
+元数据均保持。去掉仅供 CSS 使用的旧 @quamolit/touch-control npm 包，样式改从同图
+Caps 模块加载；旧、新 CSS 的 SHA-256 完全相同。未新增门禁例外、脚本或框架。
+
+遵守既有不运行本地 Caps 的约定：本地仅链接已核对的精确正式源码，严格 Caps 安装与
+工具链配对仍由原 Linux CI 执行，不把本地链接称作正式安装验收。本地 218 定义、
+公开 12 定义、完整 strict、原几何用例 1/1（两条断言）、原质量检查、immutable 和构建通过。
+deprecated/dynamic-method=0，原 unresolved 统计仍为 7。
+
+临时 Vite 内存对照同一 0.3.0 图下原、新应用四组参数，8004 组四坐标采样完全一致；
+默认、负 a、等半径和零速度下实际 Three 管线缓冲也完全一致，每条保持 18009 顶点。
+模块初始化使用 div/键盘监听占位，WebSocket 绑定限制和重复 Three 警告已记录；这不代表
+DOM 命中、实际 WebGL/视觉或控件交互验收，不宣称 #67 的公开数值回调问题解决。
+最终精确 CI/COS 仍待远端执行，本轮不合并或部署应用。
+
+### 此前升级：Calcit 0.32.1
 
 请配对安装正式 CLI / `@calcit/procs` 0.32.1、重装模块并刷新页面。
 依赖使用已发布 Quatrefoil 0.2.0、Quaternion 0.2.19、Pointed Prompt 0.0.24、JS-FFI 0.2.9，
