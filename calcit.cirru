@@ -13,14 +13,16 @@
         'comp-container $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (store)
             let
-                states $ decode-map-as (field store :states) (:: 'Map 'Tag 'Dynamic)
+                states $ decode-map-as (field store :states)
+                  quote $ Map Tag Dynamic
                 scaled 0.02
               scene ({})
                 group
                   {}
                     :scale $ [] scaled scaled scaled
                     :position $ [] -0.1 1 -0.1
-                  comp-knots $ decode-map-as (>> states :knots) (:: 'Map 'Tag 'Dynamic)
+                  comp-knots $ decode-map-as (>> states :knots)
+                    quote $ Map Tag Dynamic
                   sphere $ {} (:radius 2) (:width-segments 10) (:height-segments 8)
                     :position $ [] -20 -30 0
                     :rotation $ [] 0 0 0
@@ -40,7 +42,7 @@
                 state $ decode-map-as
                   or (field states :data)
                     {} (:a 2) (:b 20) (:speed 10) (:r-speed 4)
-                  :: 'Map 'Tag 'Number
+                  quote $ Map Tag Number
               group ({})
                 tube $ {} (:points-fn knots-fn) (:factor state) (:radius 0.4) (:tubular-segments 2000) (:radial-segments 8)
                   :position $ [] 0 0 0
@@ -146,7 +148,7 @@
                 (:quaternion s x y z) ([] x y z s)
           :examples $ []
           :schema $ quote $ Fn Number (Map Tag Number)
-            -> $ List Number
+            -> $ Tuple Number Number Number Number
           :tests $ [] $ %{} 'TestEntry (:name |curve-list-contract)
             :code $ quote $ do
               assert= ([] -20 0 0 0)
