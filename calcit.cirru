@@ -13,16 +13,13 @@
         'comp-container $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (store)
             let
-                states $ decode-map-as
-                  .unwrap $ get store :states
-                  Map Tag Dynamic
                 scaled 0.02
               scene ({})
                 group
                   {}
                     :scale $ [] scaled scaled scaled
                     :position $ [] -0.1 1 -0.1
-                  comp-knots $ decode-map-as (>> states :knots) (Map Tag Dynamic)
+                  comp-knots store
                   sphere $ {} (:radius 2) (:width-segments 10) (:height-segments 8)
                     :position $ [] -20 -30 0
                     :rotation $ [] 0 0 0
@@ -34,20 +31,11 @@
                   ; point-light $ {} (:color 0xffffff) (:intensity 2) (:distance 200)
                     :position $ [] 0 60 0
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> quatrefoil.schema/Component) (:features :js-ffi)
+          :schema $ quote $ Fn app.updater/KnotsState (-> quatrefoil.schema/Component) (:features :js-ffi)
         'comp-knots $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defcomp comp-knots (states)
+          :code $ quote $ defcomp comp-knots (state)
             let
-                cursor $ decode-map-as
-                  .unwrap $ get states :cursor
-                  List Tag
-                state $ decode-map-as
-                  match (get states :data)
-                    (:some data)
-                      or data $ {} (:a 2) (:b 20) (:speed 10) (:r-speed 4)
-                    (:none)
-                      {} (:a 2) (:b 20) (:speed 10) (:r-speed 4)
-                  Map Tag Number
+                cursor app.updater/knots-cursor
               group ({})
                 tube $ {} (:points-fn knots-fn) (:factor state) (:radius 0.4) (:tubular-segments 2000) (:radial-segments 8)
                   :position $ [] 0 0 0
@@ -56,64 +44,56 @@
                   :material $ {} (:kind :mesh-standard) (:opacity 0.9) (:transparent false) (:roughness 0.7) (:metalness 0.5) (:color 0xf090c0)
                 comp-value
                   {} (:speed 0.2) (:show-text? true) (:label |a)
-                    :value $ .unwrap $ get state :a
+                    :value $ :a state
                     :position $ [] 10 20 5
                     :bound $ [] -40 40
                     :color 0xccaaff
                   fn (v1 d!)
                     hint-fn $ Fn Number
-                      Fn (List Tag) (Map Tag Number) (-> Unit)
+                      Fn (List Tag) app.updater/KnotsState $ -> Unit
                       -> Unit
-                    d! cursor $ assoc state :a $ decode-map-as v1 'Number
+                    d! cursor $ &struct:assoc state :a v1
                 comp-value
                   {} (:speed 0.2) (:show-text? true) (:label |b)
-                    :value $ .unwrap $ get state :b
+                    :value $ :b state
                     :position $ [] 14 20 5
                     :bound $ [] 0 80
                     :color 0xffaa99
                   fn (v1 d!)
                     hint-fn $ Fn Number
-                      Fn (List Tag) (Map Tag Number) (-> Unit)
+                      Fn (List Tag) app.updater/KnotsState $ -> Unit
                       -> Unit
-                    d! cursor $ assoc state :b $ decode-map-as v1 'Number
+                    d! cursor $ &struct:assoc state :b v1
                 comp-value
                   {} (:speed 0.1) (:show-text? true) (:label |speed)
-                    :value $ .unwrap $ get state :speed
+                    :value $ :speed state
                     :position $ [] 22 20 4
                     :bound $ [] 0.1 60
                     :color 0x55ffaa
                   fn (v1 d!)
                     hint-fn $ Fn Number
-                      Fn (List Tag) (Map Tag Number) (-> Unit)
+                      Fn (List Tag) app.updater/KnotsState $ -> Unit
                       -> Unit
-                    d! cursor $ assoc state :speed $ decode-map-as v1 'Number
+                    d! cursor $ &struct:assoc state :speed v1
                 comp-value
                   {} (:speed 0.1) (:show-text? true) (:label |r-speed)
-                    :value $ .unwrap $ get state :r-speed
+                    :value $ :r-speed state
                     :position $ [] 26 20 4
                     :bound $ [] 0.1 400
                     :color 0xffffaa
                   fn (v1 d!)
                     hint-fn $ Fn Number
-                      Fn (List Tag) (Map Tag Number) (-> Unit)
+                      Fn (List Tag) app.updater/KnotsState $ -> Unit
                       -> Unit
-                    d! cursor $ assoc state :r-speed $ decode-map-as v1 'Number
+                    d! cursor $ &struct:assoc state :r-speed v1
                 text $ {}
                   :text $ str
-                    .!toFixed
-                      .unwrap $ get state :a
-                      , 3
+                    .!toFixed (:a state) 3
                     , "| "
-                      .!toFixed
-                        .unwrap $ get state :b
-                        , 3
+                      .!toFixed (:b state) 3
                       , "|, "
-                        .!toFixed
-                          .unwrap $ get state :speed
-                          , 3
-                        , "| " $ .!toFixed
-                          .unwrap $ get state :r-speed
-                          , 3
+                        .!toFixed (:speed state) 3
+                        , "| " $ .!toFixed (:r-speed state) 3
                   :position $ [] 0 30 0
                   :size 2
                   :depth 0.2
@@ -124,14 +104,14 @@
                   :position $ [] 20 40 10
                 ambient-light $ {} $ :color 0xdddddd
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> quatrefoil.schema/Component) (:features :js-ffi)
+          :schema $ quote $ Fn app.updater/KnotsState (-> quatrefoil.schema/Component) (:features :js-ffi)
         'knots-fn $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn knots-fn (ratio factor)
             let
-                a $ .unwrap $ get factor :a
-                b $ .unwrap $ get factor :b
-                speed $ .unwrap $ get factor :speed
-                r-speed $ .unwrap $ get factor :r-speed
+                a $ :a factor
+                b $ :b factor
+                speed $ :speed factor
+                r-speed $ :r-speed factor
                 r $ * 0.5 $ - b a
                 center $ + a r
                 t1 $ * ratio speed 3.141592653589793
@@ -147,31 +127,28 @@
                   quaternion (sin t2) 0 0 $ negate $ cos t2
                 (:quaternion s x y z) ([] x y z s)
           :examples $ []
-          :schema $ quote $ Fn Number (Map Tag Number)
+          :schema $ quote $ Fn Number app.updater/KnotsState
             -> $ Tuple Number Number Number Number
           :tests $ [] $ %{} 'TestEntry (:name |curve-list-contract)
             :code $ quote $ do
+              assert= ([] -20 0 0 0) (knots-fn 0 app.updater/default-state)
               assert= ([] -20 0 0 0)
-                knots-fn 0 $ {} (:a 2) (:b 20) (:speed 10) (:r-speed 4)
-              assert= ([] -20 0 0 0)
-                knots-fn 0.37 $ {} (:a 2) (:b 20) (:speed 0) (:r-speed 0)
+                knots-fn 0.37 $ app.updater/KnotsState :a 2 :b 20 :speed 0 :r-speed 0
             :tags $ #{} :geometry
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require
             quatrefoil.alias :refer $ group box sphere point-light ambient-light perspective-camera scene text tube
-            quatrefoil.core :refer $ defcomp >>
+            quatrefoil.core :refer $ defcomp
             quatrefoil.comp.control :refer $ comp-value
             quaternion.core :refer $ &v+ &q* quaternion
             js-ffi.browser :refer $ document-body element-request-fullscreen!
     'app.main $ %{} 'FileEntry
       :defs $ {}
         '*store $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defref *store
-            {} $ :states $ {}
-              :cursor $ []
+          :code $ quote $ defref *store app.updater/default-state
           :examples $ []
-          :schema $ quote $ Ref (Map Tag Dynamic)
+          :schema $ quote $ Ref app.updater/KnotsState
         'MobileDetectHost $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait MobileDetectHost
             .mobile? $ Fn app.main/MobileDetectHost $ -> (JsNullish String)
@@ -181,16 +158,23 @@
           :schema $ quote Trait
           :tags $ #{} :ffi :js-host
         'dispatch! $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn dispatch! (op op-data)
+          :code $ quote $ defn dispatch! (op payload)
             if (list? op)
-              recur :states $ [] op op-data
               let
-                  store $ updater @*store op op-data
-                ; js/console.log |Dispatch: op op-data store
-                reset! *store store
-                , &unit
+                  cursor $ decode-map-as op $ List Tag
+                reset! *store $ updater @*store cursor payload
+              when
+                and (tag? op)
+                  = (decode-map-as op 'Tag) :states
+                let
+                    pair $ decode-map-as payload $ List Dynamic
+                    cursor $ decode-map-as
+                      .unwrap $ nth pair 0
+                      List Tag
+                  reset! *store $ updater @*store cursor $ .unwrap (nth pair 1)
+            , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic Dynamic (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn Op Payload (-> Unit) (:generics Op Payload)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! () (load-console-formatter!) (inject-tree-methods)
             set-perspective-camera! $ {} (:fov 40) (:near 0.1) (:far 100)
@@ -248,15 +232,42 @@
             js-ffi.browser :refer $ viewport-width viewport-height query-selector
             |@quatrefoil/utils :refer $ inject-tree-methods
     'app.updater $ %{} 'FileEntry
-      :defs $ {} $ 'updater
-        %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn updater (store op op-data)
-            match op
-              :states $ update-states store op-data
-              _ store
+      :defs $ {}
+        'KnotsPayload $ %{} 'CodeEntry
+          :doc "|Current curve parameters or the legacy numeric Map."
+          :code $ quote $ defunion KnotsPayload KnotsState (Map Tag Number)
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) Dynamic Dynamic
-            -> $ Map Tag Dynamic
+          :schema $ quote UnionDef
+        'KnotsState $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defstruct KnotsState (:a Number) (:b Number) (:speed Number) (:r-speed Number)
+          :examples $ []
+          :schema $ quote StructDef
+        'default-state $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ def default-state
+            KnotsState :a 2 :b 20 :speed 10 :r-speed 4
+          :examples $ []
+          :schema $ quote app.updater/KnotsState
+        'knots-cursor $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ def knots-cursor ([] :knots)
+          :examples $ []
+          :schema $ quote $ List Tag
+        'updater $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn updater (store cursor raw)
+            if (= cursor knots-cursor)
+              if (not raw) default-state $ let
+                  state $ decode-map-as raw KnotsPayload
+                match state
+                  (Map fields)
+                    KnotsState :a
+                      .unwrap $ get fields :a
+                      , :b
+                        .unwrap $ get fields :b
+                        , :speed
+                          .unwrap $ get fields :speed
+                          , :r-speed $ .unwrap $ get fields :r-speed
+                  (KnotsState checked) checked
+              , store
+          :examples $ []
+          :schema $ quote $ Fn app.updater/KnotsState (List Tag) Raw (-> app.updater/KnotsState) (:generics Raw)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
-          :require $ quatrefoil.cursor :refer $ update-states
