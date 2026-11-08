@@ -13,16 +13,16 @@
         'comp-container $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (store)
             let
-                states $ decode-map-as (field store :states)
-                  quote $ Map Tag Dynamic
+                states $ decode-map-as
+                  .unwrap $ get store :states
+                  Map Tag Dynamic
                 scaled 0.02
               scene ({})
                 group
                   {}
                     :scale $ [] scaled scaled scaled
                     :position $ [] -0.1 1 -0.1
-                  comp-knots $ decode-map-as (>> states :knots)
-                    quote $ Map Tag Dynamic
+                  comp-knots $ decode-map-as (>> states :knots) (Map Tag Dynamic)
                   sphere $ {} (:radius 2) (:width-segments 10) (:height-segments 8)
                     :position $ [] -20 -30 0
                     :rotation $ [] 0 0 0
@@ -38,11 +38,16 @@
         'comp-knots $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-knots (states)
             let
-                cursor $ field states :cursor
+                cursor $ decode-map-as
+                  .unwrap $ get states :cursor
+                  List Tag
                 state $ decode-map-as
-                  or (field states :data)
-                    {} (:a 2) (:b 20) (:speed 10) (:r-speed 4)
-                  quote $ Map Tag Number
+                  match (get states :data)
+                    (:some data)
+                      or data $ {} (:a 2) (:b 20) (:speed 10) (:r-speed 4)
+                    (:none)
+                      {} (:a 2) (:b 20) (:speed 10) (:r-speed 4)
+                  Map Tag Number
               group ({})
                 tube $ {} (:points-fn knots-fn) (:factor state) (:radius 0.4) (:tubular-segments 2000) (:radial-segments 8)
                   :position $ [] 0 0 0
@@ -56,8 +61,8 @@
                     :bound $ [] -40 40
                     :color 0xccaaff
                   fn (v1 d!)
-                    hint-fn $ Fn Dynamic
-                      Fn Dynamic Dynamic $ -> Unit
+                    hint-fn $ Fn Number
+                      Fn (List Tag) (Map Tag Number) (-> Unit)
                       -> Unit
                     d! cursor $ assoc state :a $ decode-map-as v1 'Number
                 comp-value
@@ -67,8 +72,8 @@
                     :bound $ [] 0 80
                     :color 0xffaa99
                   fn (v1 d!)
-                    hint-fn $ Fn Dynamic
-                      Fn Dynamic Dynamic $ -> Unit
+                    hint-fn $ Fn Number
+                      Fn (List Tag) (Map Tag Number) (-> Unit)
                       -> Unit
                     d! cursor $ assoc state :b $ decode-map-as v1 'Number
                 comp-value
@@ -78,8 +83,8 @@
                     :bound $ [] 0.1 60
                     :color 0x55ffaa
                   fn (v1 d!)
-                    hint-fn $ Fn Dynamic
-                      Fn Dynamic Dynamic $ -> Unit
+                    hint-fn $ Fn Number
+                      Fn (List Tag) (Map Tag Number) (-> Unit)
                       -> Unit
                     d! cursor $ assoc state :speed $ decode-map-as v1 'Number
                 comp-value
@@ -89,8 +94,8 @@
                     :bound $ [] 0.1 400
                     :color 0xffffaa
                   fn (v1 d!)
-                    hint-fn $ Fn Dynamic
-                      Fn Dynamic Dynamic $ -> Unit
+                    hint-fn $ Fn Number
+                      Fn (List Tag) (Map Tag Number) (-> Unit)
                       -> Unit
                     d! cursor $ assoc state :r-speed $ decode-map-as v1 'Number
                 text $ {}
@@ -120,11 +125,6 @@
                 ambient-light $ {} $ :color 0xdddddd
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> quatrefoil.schema/Component) (:features :js-ffi)
-        'field $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn field (value key)
-            .unwrap-or (get value key) nil
-          :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) Tag (-> Dynamic)
         'knots-fn $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn knots-fn (ratio factor)
             let
@@ -174,8 +174,7 @@
           :schema $ quote $ Ref (Map Tag Dynamic)
         'MobileDetectHost $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait MobileDetectHost
-            .mobile? $ quote $ Fn app.main/MobileDetectHost
-              -> $ JsNullish String
+            .mobile? $ Fn app.main/MobileDetectHost $ -> (JsNullish String)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
             :names $ {} $ :mobile? |mobile

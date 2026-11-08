@@ -6,7 +6,13 @@ Play Torus Knots
 
 Demo http://r.tiye.me/Quatrefoil-GL/play-torus-knots/
 
-### 本轮升级：Calcit 0.34.2
+### 使用者影响
+
+请配对使用正式 Calcit 和 `@calcit/procs` 0.37.0，重新安装依赖并构建。Quatrefoil 使用正式 0.3.4，传递 Touch Control 0.0.39。四个控制参数继续使用原范围，曲线保留 2000 段及四坐标列表。
+
+本次将数值回调收紧为 Number、Tag 路径和数值 Map，显式处理缺失状态。本地通过完整 strict、原几何测试、生成 JS 四个控件回调和 Vite 构建。Linux CI 复验原门禁和精确 Caps 依赖；实际 WebGL 画面尚未复验。
+
+### 历史：Calcit 0.34.2
 
 请配对安装 CLI/procs 0.34.2 和正式 Quatrefoil 0.3.0，传递 Touch Control 0.0.36，
 其余正式模块版本保持。knots-fn 的结果现在明确为四项 [x y z s] Tuple，保留原 List
