@@ -159,20 +159,26 @@
           :tags $ #{} :ffi :js-host
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op payload)
-            if (list? op)
-              let
-                  cursor $ decode-map-as op $ List Tag
-                reset! *store $ updater @*store cursor payload
-              when
-                and (tag? op)
-                  = (decode-map-as op 'Tag) :states
-                let
-                    pair $ decode-map-as payload $ List Dynamic
-                    cursor $ decode-map-as
-                      .unwrap $ nth pair 0
-                      List Tag
-                  reset! *store $ updater @*store cursor $ .unwrap (nth pair 1)
-            , &unit
+            let
+                state-event $ if (list? op)
+                  Option :some $ [] op payload
+                  if
+                    and (tag? op)
+                      = (decode-map-as op Tag) :states
+                    Option :some $ decode-map-as payload $ List Dynamic
+                    Option :none
+              match state-event
+                (:some pair)
+                  let
+                      cursor $ decode-map-as
+                        .unwrap $ nth pair 0
+                        List Tag
+                      raw $ .unwrap $ nth pair 1
+                    reset! *store $ if (= cursor app.updater/knots-cursor)
+                      if (not raw) app.updater/default-state $ app.updater/read-state $ decode-map-as raw app.updater/KnotsPayload
+                      , @*store
+                (:none) &unit
+              , &unit
           :examples $ []
           :schema $ quote $ Fn Op Payload (-> Unit) (:generics Op Payload)
         'main! $ %{} 'CodeEntry (:doc |)
@@ -222,7 +228,6 @@
           :require
             quatrefoil.core :refer $ render-canvas! init-controls! *global-tree clear-cache! init-renderer! handle-key-event handle-control-events
             app.comp.container :refer $ comp-container
-            app.updater :refer $ updater
             |three :as THREE
             touch-control.core :refer $ render-control! control-states start-control-loop! clear-control-loop!
             |mobile-detect :default mobile-detect
@@ -251,23 +256,19 @@
           :code $ quote $ def knots-cursor ([] :knots)
           :examples $ []
           :schema $ quote $ List Tag
-        'updater $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn updater (store cursor raw)
-            if (= cursor knots-cursor)
-              if (not raw) default-state $ let
-                  state $ decode-map-as raw KnotsPayload
-                match state
-                  (Map fields)
-                    KnotsState :a
-                      .unwrap $ get fields :a
-                      , :b
-                        .unwrap $ get fields :b
-                        , :speed
-                          .unwrap $ get fields :speed
-                          , :r-speed $ .unwrap $ get fields :r-speed
-                  (KnotsState checked) checked
-              , store
+        'read-state $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn read-state (state)
+            match state
+              (Map fields)
+                KnotsState :a
+                  .unwrap $ get fields :a
+                  , :b
+                    .unwrap $ get fields :b
+                    , :speed
+                      .unwrap $ get fields :speed
+                      , :r-speed $ .unwrap $ get fields :r-speed
+              (KnotsState checked) checked
           :examples $ []
-          :schema $ quote $ Fn app.updater/KnotsState (List Tag) Raw (-> app.updater/KnotsState) (:generics Raw)
+          :schema $ quote $ Fn app.updater/KnotsPayload (-> app.updater/KnotsState)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
