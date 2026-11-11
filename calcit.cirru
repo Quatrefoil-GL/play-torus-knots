@@ -159,28 +159,30 @@
           :tags $ #{} :ffi :js-host
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op payload)
-            let
-                state-event $ if (list? op)
-                  Option :some $ [] op payload
-                  if
-                    and (tag? op)
-                      = (decode-map-as op Tag) :states
-                    Option :some $ decode-map-as payload $ List Dynamic
-                    Option :none
-              match state-event
-                (:some pair)
-                  let
-                      cursor $ decode-map-as
-                        .unwrap $ nth pair 0
-                        List Tag
-                      raw $ .unwrap $ nth pair 1
-                    reset! *store $ if (= cursor app.updater/knots-cursor)
-                      if (not raw) app.updater/default-state $ app.updater/read-state $ decode-map-as raw app.updater/KnotsPayload
-                      , @*store
-                (:none) &unit
-              , &unit
+            if (list? op)
+              dispatch-state!
+                decode-map-as op $ List Tag
+                , payload
+              when
+                and (tag? op) (= op :states)
+                let
+                    pair $ decode-map-as payload $ List Dynamic
+                    cursor $ decode-map-as
+                      .unwrap $ nth pair 0
+                      List Tag
+                    raw $ .unwrap $ nth pair 1
+                  dispatch-state! cursor raw
+            , &unit
           :examples $ []
           :schema $ quote $ Fn Op Payload (-> Unit) (:generics Op Payload)
+        'dispatch-state! $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn dispatch-state! (cursor raw)
+            reset! *store $ if (= cursor app.updater/knots-cursor)
+              if (not raw) app.updater/default-state $ app.updater/read-state $ decode-map-as raw app.updater/KnotsPayload
+              , @*store
+            , &unit
+          :examples $ []
+          :schema $ quote $ Fn (List Tag) Raw (-> Unit) (:generics Raw)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! () (load-console-formatter!) (inject-tree-methods)
             set-perspective-camera! $ {} (:fov 40) (:near 0.1) (:far 100)
@@ -251,7 +253,7 @@
           :code $ quote $ def default-state
             KnotsState :a 2 :b 20 :speed 10 :r-speed 4
           :examples $ []
-          :schema $ quote app.updater/KnotsState
+          :schema $ quote KnotsState
         'knots-cursor $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def knots-cursor ([] :knots)
           :examples $ []
@@ -269,6 +271,6 @@
                       , :r-speed $ .unwrap $ get fields :r-speed
               (KnotsState checked) checked
           :examples $ []
-          :schema $ quote $ Fn app.updater/KnotsPayload (-> app.updater/KnotsState)
+          :schema $ quote $ Fn KnotsPayload (-> KnotsState)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
