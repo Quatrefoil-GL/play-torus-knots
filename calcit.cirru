@@ -165,20 +165,39 @@
                 , payload
               when
                 and (tag? op) (= op :states)
-                let
-                    pair $ decode-map-as payload $ List Dynamic
-                    cursor $ decode-map-as
-                      .unwrap $ nth pair 0
+                if (list? payload)
+                  dispatch-state!
+                    decode-map-as
+                      .unwrap $ nth payload 0
                       List Tag
-                    raw $ .unwrap $ nth pair 1
-                  dispatch-state! cursor raw
+                    .unwrap $ nth payload 1
+                  raise "|Expected a state dispatch list"
             , &unit
           :examples $ []
           :schema $ quote $ Fn Op Payload (-> Unit) (:generics Op Payload)
+          :tests $ [] $ %{} 'TestEntry (:name |preserves-legacy-state-dispatch)
+            :code $ quote $ let
+                previous @*store
+                cursor app.updater/knots-cursor
+                params $ {} (:a 3) (:b 12) (:speed 5) (:r-speed 2)
+                expected $ app.updater/KnotsState :a 3 :b 12 :speed 5 :r-speed 2
+              dispatch! :states $ [] cursor params
+              assert= expected @*store
+              dispatch! :states $ [] ([] :other) |unused
+              assert= expected @*store
+              dispatch! :states $ [] cursor nil
+              assert= app.updater/default-state @*store
+              dispatch! cursor expected
+              assert= expected @*store
+              dispatch! :states $ [] cursor false
+              assert= app.updater/default-state @*store
+              reset! *store previous
         'dispatch-state! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch-state! (cursor raw)
             reset! *store $ if (= cursor app.updater/knots-cursor)
-              if (not raw) app.updater/default-state $ app.updater/read-state $ decode-map-as raw app.updater/KnotsPayload
+              if raw
+                app.updater/read-state $ decode-map-as raw app.updater/KnotsPayload
+                , app.updater/default-state
               , @*store
             , &unit
           :examples $ []
