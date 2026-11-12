@@ -174,7 +174,7 @@
                   raise "|Expected a state dispatch list"
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Op Payload (-> Unit) (:generics Op Payload)
+          :schema $ quote $ Fn Op Payload (-> Unit) (:generics Op Payload) (:features :state)
           :tests $ [] $ %{} 'TestEntry (:name |preserves-legacy-state-dispatch)
             :code $ quote $ let
                 previous @*store
@@ -201,7 +201,7 @@
               , @*store
             , &unit
           :examples $ []
-          :schema $ quote $ Fn (List Tag) Raw (-> Unit) (:generics Raw)
+          :schema $ quote $ Fn (List Tag) Raw (-> Unit) (:generics Raw) (:features :state)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! () (load-console-formatter!) (inject-tree-methods)
             set-perspective-camera! $ {} (:fov 40) (:near 0.1) (:far 100)
@@ -218,7 +218,7 @@
             init-controls!
             println "|App started!"
           :examples $ []
-          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn (-> Unit) (:features :io :js-ffi :state)
         'mobile? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn mobile? ()
             let
@@ -238,12 +238,12 @@
                 println "|Code updated."
             , &unit
           :examples $ []
-          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn (-> Unit) (:features :io :js-ffi :state)
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! () (; println "|Render app:")
             render-canvas! (comp-container @*store) dispatch!
           :examples $ []
-          :schema $ quote $ Fn (-> Unit)
+          :schema $ quote $ Fn (-> Unit) (:features :state)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
