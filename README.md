@@ -8,7 +8,7 @@ Demo http://r.tiye.me/Quatrefoil-GL/play-torus-knots/
 
 ### Calcit 0.44.0 使用说明
 
-配套使用正式 Calcit 和 `@calcit/procs` 0.44.0、Quatrefoil 0.3.7、Quaternion 0.2.26、Pointed Prompt 0.0.30 和 JS-FFI 0.2.19，重装依赖并构建。本地旧热重载会话请刷新页面。
+配套使用正式 Calcit 和 `@calcit/procs` 0.44.0、Quatrefoil 0.3.8、Quaternion 0.2.26、Pointed Prompt 0.0.31 和 JS-FFI 0.2.23，重装依赖并构建。本地旧热重载会话请刷新页面。
 四个参数保留原默认值和范围，曲线保留 2000 段和四坐标结果。
 
 控件和曲线计算使用四个必填数值字段。直接游标和旧 `:states` pair 仍接受数值 Map，
