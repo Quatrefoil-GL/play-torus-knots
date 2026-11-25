@@ -195,7 +195,8 @@
         'dispatch-state! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch-state! (cursor raw)
             reset! *store $ if (= cursor app.updater/knots-cursor)
-              if raw
+              if
+                if (bool? raw) raw $ non-nil? raw
                 app.updater/read-state $ decode-map-as raw app.updater/KnotsPayload
                 , app.updater/default-state
               , @*store
