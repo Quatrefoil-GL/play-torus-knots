@@ -189,6 +189,10 @@
               assert= app.updater/default-state @*store
               dispatch! cursor expected
               assert= expected @*store
+              dispatch! cursor &unit
+              assert= app.updater/default-state @*store
+              dispatch! cursor expected
+              assert= expected @*store
               dispatch! :states $ [] cursor false
               assert= app.updater/default-state @*store
               reset! *store previous
@@ -196,7 +200,8 @@
           :code $ quote $ defn dispatch-state! (cursor raw)
             reset! *store $ if (= cursor app.updater/knots-cursor)
               if
-                if (bool? raw) raw $ non-nil? raw
+                if (bool? raw) raw $ not $ or (nil? raw)
+                  = (type-of raw) :unit
                 app.updater/read-state $ decode-map-as raw app.updater/KnotsPayload
                 , app.updater/default-state
               , @*store
