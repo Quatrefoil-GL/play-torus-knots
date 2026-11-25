@@ -8,6 +8,8 @@ Demo http://r.tiye.me/Quatrefoil-GL/play-torus-knots/
 
 ### Calcit 0.45.1 使用说明
 
+修复旧状态派发中 `Unit` 的假值判断；传入 `Unit` 时恢复默认参数，数字 0 与空字符串仍为真值，会继续接受状态类型检查。
+
 配套使用正式 Calcit 和 `@calcit/procs` 0.45.1、Quatrefoil 0.3.9、Quaternion 0.2.27、Pointed Prompt 0.0.32 和 JS-FFI 0.2.24，重装依赖并构建。本地旧热重载会话请刷新页面。
 四个参数保留原默认值和范围，曲线保留 2000 段和四坐标结果。
 239 个定义、16 个项目公开定义、完整 strict、原两项测试及前端构建通过；本轮未复验实际 WebGL 和控件交互。
