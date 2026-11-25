@@ -6,10 +6,11 @@ Play Torus Knots
 
 Demo http://r.tiye.me/Quatrefoil-GL/play-torus-knots/
 
-### Calcit 0.44.0 使用说明
+### Calcit 0.45.1 使用说明
 
-配套使用正式 Calcit 和 `@calcit/procs` 0.44.0、Quatrefoil 0.3.8、Quaternion 0.2.26、Pointed Prompt 0.0.31 和 JS-FFI 0.2.23，重装依赖并构建。本地旧热重载会话请刷新页面。
+配套使用正式 Calcit 和 `@calcit/procs` 0.45.1、Quatrefoil 0.3.9、Quaternion 0.2.27、Pointed Prompt 0.0.32 和 JS-FFI 0.2.24，重装依赖并构建。本地旧热重载会话请刷新页面。
 四个参数保留原默认值和范围，曲线保留 2000 段和四坐标结果。
+239 个定义、16 个项目公开定义、完整 strict、原两项测试及前端构建通过；本轮未复验实际 WebGL 和控件交互。
 
 控件和曲线计算使用四个必填数值字段。直接游标和旧 `:states` pair 仍接受数值 Map，
 缺字段或类型错误会在写入前拒绝。只有 `[:knots]` 游标会更新场景参数。
